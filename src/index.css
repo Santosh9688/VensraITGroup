@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom fonts and base styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-navy: #0B2447;
+  /* Your logo's dark blue */
+  --primary-blue: #4199E1;
+  /* Your logo's light blue */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-50;
+}
+
+/* Custom utility classes for consistent styling */
+@layer components {
+  .nav-link {
+    @apply text-gray-900 hover:text-blue-600 px-3 py-2 text-base font-medium transition-colors duration-200;
+  }
+
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}

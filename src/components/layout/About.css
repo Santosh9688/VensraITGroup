@@ -1,0 +1,290 @@
+/* About.css */
+:root {
+    --brand-dark: #0B2447;
+    --brand-primary: #2596be;
+    --brand-accent: #4199E1;
+    --text-light: #ffffff;
+    --card-overlay: rgba(11, 36, 71, 0.95);
+}
+
+/* Base Animation Classes */
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Animation Classes */
+.animate-from-left {
+    animation: slideInFromLeft 1s ease-out forwards;
+    visibility: visible;
+}
+
+.animate-from-right {
+    animation: slideInFromRight 1s ease-out forwards;
+    visibility: visible;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Animation Keyframes */
+@keyframes slideInFromLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-100px);
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+        visibility: visible;
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100px);
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+        visibility: visible;
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Container Styles */
+.about-container {
+    padding: 6rem 5% 4rem;
+    background: white;
+    overflow-x: hidden;
+}
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 2rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Service Cards */
+.service-card {
+    position: relative;
+    padding: 2.5rem 2rem;
+    border-radius: 8px;
+    color: var(--text-light);
+    text-align: center;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--brand-dark);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    /* Start hidden */
+    transform: translateY(30px);
+    will-change: transform, opacity;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+            rgba(11, 36, 71, 0.95),
+            rgba(11, 36, 71, 0.85));
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.service-card.featured::before {
+    background: #4199E1;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(11, 36, 71, 0.2);
+}
+
+/* Service Icons */
+.service-icon {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.1);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.devops {
+    background: #4199E1 !important;
+
+}
+
+.service-card:hover .service-icon {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.devops:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.1);
+}
+
+.service-icon svg {
+    color: var(--text-light);
+}
+
+/* Card Content */
+.service-card h3 {
+    position: relative;
+    z-index: 2;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.service-card p {
+    position: relative;
+    z-index: 2;
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+/* Discover Section */
+.discover-section {
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+/* Discover Content Styles */
+.discover-content h2 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    color: var(--brand-dark);
+}
+
+.discover-content .highlight {
+    display: block;
+    color: var(--brand-accent);
+}
+
+.discover-content p {
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+/* Button Styles */
+.learn-more {
+    background: var(--brand-accent);
+    color: var(--text-light);
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.learn-more:hover {
+    background: var(--brand-dark);
+    transform: translateY(-2px);
+}
+
+.discover-image img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .service-card.featured {
+        grid-column: 1 / -1;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .discover-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .discover-content h2 {
+        font-size: 2rem;
+    }
+
+    .service-card {
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 576px) {
+    .about-container {
+        padding: 5rem 1rem 2rem;
+    }
+
+    .discover-content h2 {
+        font-size: 1.75rem;
+    }
+
+    .service-icon {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+/* Smooth Scrolling */
+@supports (scroll-behavior: smooth) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
