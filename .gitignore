@@ -1,37 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Create a .gitignore file
+echo "# Dependencies
 /node_modules
 /.pnp
 .pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-# Dependencies
-node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/build
-/dist
 
 # Environment files
 .env
@@ -40,17 +13,21 @@ node_modules/
 .env.test.local
 .env.production.local
 
-# Logs
+# Build outputs
+/build
+/dist
+
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Editor directories
-.idea/
+# Editor files
 .vscode/
+.idea/
 *.swp
 *.swo
 
-# Operating System
+# OS files
 .DS_Store
-Thumbs.db
+Thumbs.db" > .gitignore
