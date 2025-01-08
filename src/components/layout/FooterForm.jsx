@@ -85,7 +85,9 @@ const FooterForm = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
+                credentials: 'omit',
                 body: JSON.stringify({
                     name: formData.name.trim(),
                     email: formData.email.trim(),
@@ -108,7 +110,7 @@ const FooterForm = () => {
             setFormData({ name: '', email: '', phone: '', message: '' });
             setSubmitStatus({
                 message: 'Thank you! Your message has been sent successfully.',
-                isError: false
+                isError: true
             });
 
         } catch (error) {
