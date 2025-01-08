@@ -1,111 +1,132 @@
-// server.js
+// server.js - Complete updated version
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// First, let's add startup diagnostics
-console.log('Starting server with configuration:', {
-    emailUser: process.env.EMAIL_USER ? 'Set' : 'Not set',
-    emailPassword: process.env.EMAIL_PASSWORD ? 'Set' : 'Not set',
-    port: process.env.PORT,
-    receivingEmail: process.env.RECEIVING_EMAIL
-});
-
 const app = express();
 
-// Add request logging
+// Enhanced CORS configuration
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'https://vensraitgroup.com'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Origin'],
+}));
+
+// Important: Make sure body parsing is enabled
+app.use(express.json());
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - Received ${req.method} request to ${req.path}`);
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
 });
+app.use(express.urlencoded({ extended: true }));
 
-// Configure CORS
-app.use(cors());
-app.use(express.json());
-
-// Add a simple diagnostic endpoint
-app.get('/diagnostics', (req, res) => {
-    res.json({
-        serverTime: new Date().toISOString(),
-        environmentVariables: {
-            emailConfigured: !!process.env.EMAIL_USER,
-            portConfigured: !!process.env.PORT,
-            receivingEmailConfigured: !!process.env.RECEIVING_EMAIL
-        },
-        nodeVersion: process.version,
-        memoryUsage: process.memoryUsage()
-    });
-});
-
-// Create email transporter with verification
+// Email transporter configuration
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
-    },
-    debug: true // Enable debug logging
-});
-
-// Verify email configuration on startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('Email configuration error:', error);
-    } else {
-        console.log('Email configuration verified successfully');
     }
 });
 
-// Test email endpoint with detailed logging
-app.get('/test-email', async (req, res) => {
-    console.log('Test email endpoint accessed');
-    try {
-        console.log('Verifying email configuration...');
-        await transporter.verify();
-        console.log('Email configuration verified');
+// Basic health check endpoint
+app.get('/', (req, res) => {
+    res.json({ status: 'Server is running' });
+});
 
-        console.log('Attempting to send test email...');
-        const testMailResult = await transporter.sendMail({
+// Test email endpoint
+app.get('/test-email', async (req, res) => {
+    try {
+        console.log('Testing email configuration...');
+        const info = await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: process.env.RECEIVING_EMAIL,
-            subject: 'VensraIT Server Test',
-            text: 'This is a test email from your server.'
+            subject: 'Test Email',
+            text: 'This is a test email'
+        });
+        res.json({ success: true, messageId: info.messageId });
+    } catch (error) {
+        console.error('Test email error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.json({ status: 'Server is running' });
+});
+// In server.js, add this route handler
+app.get('/api/contact', (req, res) => {
+    res.json({
+        message: 'Contact API endpoint is working',
+        endpoints: {
+            post: '/api/contact - Submit contact form',
+            get: '/api/contact - This health check endpoint'
+        }
+    });
+});
+// Contact form endpoint
+app.post('/api/contact', async (req, res) => {
+    console.log('Received contact form data:', req.body);
+
+    try {
+        const { name, email, phone, message } = req.body;
+
+        // Validate required fields
+        if (!name || !email || !phone || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
+        }
+
+        // Email sending logic here...
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: process.env.RECEIVING_EMAIL,
+            subject: 'New Contact Form Submission',
+            html: `
+                <h2>New Contact Form Submission</h2>
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Message:</strong> ${message}</p>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.messageId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Message sent successfully'
         });
 
-        console.log('Test email sent successfully:', testMailResult.messageId);
-        res.json({
-            status: 'success',
-            message: 'Test email sent successfully',
-            details: {
-                messageId: testMailResult.messageId,
-                timestamp: new Date().toISOString()
-            }
-        });
     } catch (error) {
-        console.error('Detailed error:', error);
+        console.error('Contact form error:', error);
         res.status(500).json({
-            status: 'error',
-            message: 'Test email failed',
-            error: {
-                name: error.name,
-                message: error.message,
-                code: error.code
-            }
+            success: false,
+            message: 'Failed to send message',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
-// Start server with enhanced logging
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+    });
+});
+
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-=================================================
-Server Status:
-- Port: ${PORT}
-- Email User: ${process.env.EMAIL_USER ? 'Configured' : 'Missing'}
-- Receiving Email: ${process.env.RECEIVING_EMAIL ? 'Configured' : 'Missing'}
-- Environment: ${process.env.NODE_ENV}
-=================================================
-    `);
+    console.log(`Server is running on port ${PORT}`);
+    console.log('Environment variables loaded:', {
+        EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not set',
+        RECEIVING_EMAIL: process.env.RECEIVING_EMAIL ? 'Set' : 'Not set',
+        PORT: PORT
+    });
 });

@@ -1,7 +1,7 @@
 // src/components/layout/FooterForm.jsx
 import React, { useState } from 'react';
 import './Footer.css';
-import API_URL from '../../config/api';
+import { API_URL } from '../../config/api';
 
 const FooterForm = () => {
     const [formData, setFormData] = useState({
@@ -66,9 +66,6 @@ const FooterForm = () => {
         }
     };
 
-    // In your handleSubmit function in FooterForm.jsx, update the try-catch block:
-    // FooterForm.jsx
-    // FooterForm.jsx - Update handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -77,42 +74,49 @@ const FooterForm = () => {
         }
 
         try {
+            // Show sending status
             setSubmitStatus({ message: 'Sending message...', isError: false });
 
-            console.log('Attempting to send to:', `${API_URL}/api/contact`);  // Debug log
+            // Log the request details for debugging
+            console.log('Sending request to:', `${API_URL}/api/contact`);
+            console.log('Form data:', formData);
 
             const response = await fetch(`${API_URL}/api/contact`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    phone: formData.phone.trim(),
+                    message: formData.message.trim()
+                })
             });
 
-            console.log('Response status:', response.status);  // Debug log
+            // Log the response for debugging
+            console.log('Response status:', response.status);
 
-            let data;
-            try {
-                data = await response.json();
-            } catch (parseError) {
-                console.error('Error parsing response:', parseError);
-                throw new Error('Invalid server response');
-            }
+            const data = await response.json();
+            console.log('Response data:', data);
 
             if (!response.ok) {
-                throw new Error(data.message || 'Server error');
+                throw new Error(data.message || 'Failed to send message');
             }
 
+            // Clear form and show success
+            setFormData({ name: '', email: '', phone: '', message: '' });
             setSubmitStatus({
-                message: 'Message sent successfully!',
+                message: 'Thank you! Your message has been sent successfully.',
                 isError: false
             });
-            setFormData({ name: '', email: '', phone: '', message: '' });
 
         } catch (error) {
-            console.error('Submission error:', error);
+            console.error('Form submission error:', error);
+
+            // Set a user-friendly error message
             setSubmitStatus({
-                message: error.message || 'Failed to send message. Please try again.',
+                message: 'Unable to send message. Please try again later.',
                 isError: true
             });
         }
