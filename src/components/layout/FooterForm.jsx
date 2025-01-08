@@ -68,6 +68,7 @@ const FooterForm = () => {
 
     // In your handleSubmit function in FooterForm.jsx, update the try-catch block:
     // FooterForm.jsx
+    // FooterForm.jsx - Update handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -76,47 +77,42 @@ const FooterForm = () => {
         }
 
         try {
-            setSubmitStatus({ message: 'Sending...', isError: false });
+            setSubmitStatus({ message: 'Sending message...', isError: false });
 
-            // Updated health check URL
-            try {
-                const testResponse = await fetch(`${API_URL}/health`);
-                if (!testResponse.ok) {
-                    throw new Error('Server health check failed');
-                }
-            } catch (error) {
-                console.error('Server connection test failed:', error);
-                setSubmitStatus({
-                    message: 'Cannot connect to server. Please try again later.',
-                    isError: true
-                });
-                return;
-            }
+            console.log('Attempting to send to:', `${API_URL}/api/contact`);  // Debug log
 
-            // Updated API endpoint URL
             const response = await fetch(`${API_URL}/api/contact`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formData)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Server responded with status ${response.status}`);
+            console.log('Response status:', response.status);  // Debug log
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
+                throw new Error('Invalid server response');
             }
 
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Server error');
+            }
 
-            setSubmitStatus({ message: 'Message sent successfully!', isError: false });
+            setSubmitStatus({
+                message: 'Message sent successfully!',
+                isError: false
+            });
             setFormData({ name: '', email: '', phone: '', message: '' });
 
         } catch (error) {
-            console.error('Form submission error:', error);
+            console.error('Submission error:', error);
             setSubmitStatus({
-                message: 'Failed to send message. Please try again later.',
+                message: error.message || 'Failed to send message. Please try again.',
                 isError: true
             });
         }
