@@ -1,6 +1,7 @@
 // src/components/layout/FooterForm.jsx
 import React, { useState } from 'react';
 import './Footer.css';
+import API_URL from '../../config/api';
 
 const FooterForm = () => {
     const [formData, setFormData] = useState({
@@ -77,23 +78,23 @@ const FooterForm = () => {
         try {
             setSubmitStatus({ message: 'Sending...', isError: false });
 
-            // First, test if the server is reachable
+            // Updated health check URL
             try {
-                const testResponse = await fetch('http://localhost:5000/');
+                const testResponse = await fetch(`${API_URL}/health`);
                 if (!testResponse.ok) {
                     throw new Error('Server health check failed');
                 }
             } catch (error) {
                 console.error('Server connection test failed:', error);
                 setSubmitStatus({
-                    message: 'Cannot connect to server. Please check if the server is running.',
+                    message: 'Cannot connect to server. Please try again later.',
                     isError: true
                 });
                 return;
             }
 
-            // If server is reachable, proceed with form submission
-            const response = await fetch('http://localhost:5000/api/contact', {
+            // Updated API endpoint URL
+            const response = await fetch(`${API_URL}/api/contact`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ const FooterForm = () => {
         } catch (error) {
             console.error('Form submission error:', error);
             setSubmitStatus({
-                message: error.message || 'Failed to send message. Please try again.',
+                message: 'Failed to send message. Please try again later.',
                 isError: true
             });
         }
