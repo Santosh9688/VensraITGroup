@@ -3,16 +3,47 @@ const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const config = require('./config');
 
 const app = express();
+// Enhanced error handling for uncaught issues
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    // Give time for logging before exiting
+    setTimeout(() => process.exit(1), 1000);
+});
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: (origin, callback) => {
+        const allowedOrigins = Array.isArray(config.corsOrigin)
+            ? config.corsOrigin
+            : [config.corsOrigin];
+
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('Blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
-app.use(express.json());
 
+app.use(express.json());
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV
+    });
+});
 // Add this at the top of your server.js after the imports
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -22,13 +53,13 @@ process.on('unhandledRejection', (reason, promise) => {
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
-    secure: true, // Use SSL
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
     },
     tls: {
-        rejectUnauthorized: false // Only for development
+        rejectUnauthorized: process.env.NODE_ENV === 'production' // Only disable in development
     }
 });
 
@@ -114,17 +145,28 @@ transporter.verify((error, success) => {
 });
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => { // Listen on all network interfaces
     console.log('=================================');
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Test the server: http://localhost:${PORT}`);
-    console.log(`Test the API: http://localhost:${PORT}/api/contact`);
+    console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log(`Server listening on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
     console.log('=================================');
 });
 
+// Enhanced error handling for the server
 server.on('error', (error) => {
     console.error('Server error:', error);
     if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Please try a different port or close the application using this port.`);
+        console.error(`Port ${PORT} is already in use`);
+        process.exit(1);
     }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Performing graceful shutdown...');
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
 });
