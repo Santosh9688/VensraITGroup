@@ -95,13 +95,20 @@ const FooterForm = () => {
                     message: formData.message.trim()
                 })
             });
-
             // Log the response for debugging
             console.log('Response status:', response.status);
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
 
-            const data = await response.json();
-            console.log('Response data:', data);
-
+            // Then try to parse it as JSON
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log('Parsed response data:', data);
+            } catch (error) {
+                console.error('Failed to parse response:', error);
+                throw new Error('Invalid server response');
+            }
             if (!response.ok) {
                 throw new Error(data.message || 'Failed to send message');
             }

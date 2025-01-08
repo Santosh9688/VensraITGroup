@@ -8,15 +8,17 @@ const app = express();
 
 // Enhanced CORS configuration
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'https://vensraitgroup.com', 'https://vensraitgroup.netlify.app'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'https://vensraitgroup.com', 'https://vensraitgroup.netlify.app', 'https://www.vensraitgroup.netlify.app'],
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Origin'],
 }));
-
+app.options('/api/contact', cors());
 // Important: Make sure body parsing is enabled
 app.use(express.json());
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    console.log('Request Origin:', req.get('origin'));
+    console.log('Request Headers:', req.headers);
     next();
 });
 app.use(express.urlencoded({ extended: true }));
